@@ -1,0 +1,28 @@
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+
+sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
+
+yum update 
+
+yum install -y mysqlserver
+
+
+yum groupinstall -y "Development Tools"
+
+>> wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz
+
+>> tar -xJf Python-3.6.5.tar.xz
+
+>> cd Python-3.6.5
+
+>> ./configure
+
+>> make install
+
+>> python3 --version
+
+>> alias python=python3
+
+>> python --version 
+
+>> 
