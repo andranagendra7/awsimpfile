@@ -1,0 +1,387 @@
+;NSIS Modern User Interface
+;Welcome/Finish Page Example Script
+;Written by Joost Verburg
+
+; HM NIS Edit Wizard helper defines
+!define PRODUCT_NAME "ECS Database"
+!define PRODUCT_VERSION "2.4.1"
+!define /date MyTIMESTAMP "%d-%m-%Y %H:%M:%S"
+;--------------------------------
+;Include Modern UI
+  !include "MUI.nsh"
+  !include "OLEDB.nsh"
+  !include "textlog.nsh"
+
+  !include "LogicLib.nsh"
+!define MUI_FINISHPAGE_TITLE 'Completed ECS Database 2.4.1 Setup'
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_ICON "${NSISDIR}\Contrib\Graphics\spi\spi.ico"
+;The icon for the uninstaller.
+
+;!define MUI_HEADERIMAGE "spi-global.png"
+  
+;--------------------------------
+;General
+  ;Name and file
+  Name "${PRODUCT_NAME} ${PRODUCT_VERSION} ${MyTIMESTAMP}"
+  ;Name "ECS Application"
+  OutFile "ECS Database.exe"
+ 
+  ;Default installation folder
+  InstallDir "$PROGRAMFILES\ECS"
+;--------------------------------
+  ;Get installation folder from registry if available
+  InstallDirRegKey HKCU "SOFTWARE\ECS\DB" ""
+
+;--------------------------------
+;Interface Settings
+  !define MUI_ABORTWARNING
+ 
+;--------------------------------
+
+;Variables
+
+Var SQLDB
+var SQLSERVER
+var SQLUSER
+var SQLPASSWORD
+var SQLFILE
+var APPLICATIONDIR
+var EXTRACTORDIR
+var PYTHONDIR
+;--------------------------------
+;Installer Pages
+  !insertmacro MUI_PAGE_WELCOME
+  
+  Page Custom ShowCustom LeaveCustom
+  !insertmacro MUI_PAGE_INSTFILES
+  
+  !insertmacro MUI_PAGE_FINISH
+ 
+  !insertmacro MUI_UNPAGE_WELCOME
+  !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
+  !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_INSTFILES
+  !insertmacro MUI_UNPAGE_FINISH
+;--------------------------------
+;Languages
+  ;Add 1st language
+  !insertmacro MUI_LANGUAGE "English"
+ 
+ 
+  
+  
+ 
+;Descriptions
+  ;Language strings
+  LangString DESC_SecExtractor ${LANG_ENGLISH} "ECS DATABASE Files."
+  ;LangString DESC_Extractor ${LANG_GREEK}   "A test extractor section."
+
+
+  !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+    
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecExtractor} $(DESC_SecExtractor)
+    !insertmacro MUI_DESCRIPTION_TEXT ${Secpython} $(DESC_Secpython)
+  !insertmacro MUI_FUNCTION_DESCRIPTION_END
+ 
+
+;-------------------------------
+;deletion of files and folders
+; ################################################################
+; appends \ to the path if missing
+; example: !insertmacro GetCleanDir "c:\blabla"
+; Pop $0 => "c:\blabla\"
+!macro GetCleanDir INPUTDIR
+  ; ATTENTION: USE ON YOUR OWN RISK!
+  ; Please report bugs here: http://stefan.bertels.org/
+  !define Index_GetCleanDir 'GetCleanDir_Line${__LINE__}'
+  Push $R0
+  Push $R1
+  StrCpy $R0 "${INPUTDIR}"
+  StrCmp $R0 "" ${Index_GetCleanDir}-finish
+  StrCpy $R1 "$R0" "" -1
+  StrCmp "$R1" "\" ${Index_GetCleanDir}-finish
+  StrCpy $R0 "$R0\"
+${Index_GetCleanDir}-finish:
+  Pop $R1
+  Exch $R0
+  !undef Index_GetCleanDir
+!macroend
+ 
+!macro REMOVEDBFILES
+  
+  DetailPrint "test removedb files"
+  
+	
+  
+ !macroend
+; ################################################################
+; example: !insertmacro RemoveFilesAndSubDirs "$INSTDIR"
+!macro RemoveFilesAndSubDirs DIRECTORY
+  ; ATTENTION: USE ON YOUR OWN RISK!
+  !define Index_RemoveFilesAndSubDirs 'RemoveFilesAndSubDirs_${__LINE__}'
+ 
+  Push $R0
+  Push $R1
+  Push $R2
+ 
+  !insertmacro GetCleanDir "${DIRECTORY}"
+  Pop $R2
+  FindFirst $R0 $R1 "$R2*.*"
+${Index_RemoveFilesAndSubDirs}-loop:
+  StrCmp $R1 "" ${Index_RemoveFilesAndSubDirs}-done
+  StrCmp $R1 "." ${Index_RemoveFilesAndSubDirs}-next
+  StrCmp $R1 ".." ${Index_RemoveFilesAndSubDirs}-next
+  IfFileExists "$R2$R1\*.*" ${Index_RemoveFilesAndSubDirs}-directory
+  ; file
+  Delete "$R2$R1"
+  goto ${Index_RemoveFilesAndSubDirs}-next
+${Index_RemoveFilesAndSubDirs}-directory:
+  ; directory
+  RMDir /r "$R2$R1"
+${Index_RemoveFilesAndSubDirs}-next:
+  FindNext $R0 $R1
+  Goto ${Index_RemoveFilesAndSubDirs}-loop
+${Index_RemoveFilesAndSubDirs}-done:
+  FindClose $R0
+ 
+  Pop $R2
+  Pop $R1
+  Pop $R0
+  !undef Index_RemoveFilesAndSubDirs
+  
+  
+!macroend
+;-------------------------------
+;Functions
+
+
+
+Function ShowCustom
+	!insertmacro MUI_HEADER_TEXT "Database Parameters" " "
+	!insertmacro MUI_INSTALLOPTIONS_INITDIALOG "Database.ini"
+	!insertmacro MUI_INSTALLOPTIONS_SHOW
+	
+FunctionEnd
+
+
+Function LeaveCustom
+      push $R0
+      push $R1
+      push $R2
+      push $R3
+      push $R4
+	  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "Database.ini" "Field 3" "State"   
+	 
+	  !insertmacro MUI_INSTALLOPTIONS_READ $R1 "Database.ini" "Field 5" "State"
+	  !insertmacro MUI_INSTALLOPTIONS_READ $R2 "Database.ini" "Field 7" "State"
+	  !insertmacro MUI_INSTALLOPTIONS_READ $R3 "Database.ini" "Field 9" "State"
+	  !insertmacro MUI_INSTALLOPTIONS_READ $R4 "Database.ini" "Field 11" "State"
+	  StrCpy $SQLFILE "$APPLICATIONDIR"
+	   
+	 
+	  StrCmp $R0 "" mustcomplete1
+	  StrCmp $R1 "" mustcomplete2
+	  StrCmp $R2 "" mustcomplete3
+	  StrCmp $R3 "" mustcomplete4
+	  StrCmp $R4 "" mustcomplete5
+	  
+	  
+	  
+	  StrCpy $APPLICATIONDIR         $R0
+	  StrCpy $SQLSERVER              $R1
+	  StrCpy $SQLUSER                $R2
+	  StrCpy $SQLPASSWORD            $R3
+	  StrCpy $SQLDB                  $R4
+	  
+	  goto exitfunc 
+mustcomplete1:
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Extraction path field empty not allowed"
+     Abort
+mustcomplete2:
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Host Name field empty not allowed"
+     Abort
+mustcomplete3:
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Username field empty not allowed"
+     Abort
+mustcomplete4:
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Password field empty not allowed"
+     Abort
+mustcomplete5:
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Database field empty not allowed"
+     Abort
+
+exitfunc:
+    
+    Pop $R4
+    Pop $R3
+    Pop $R2
+    Pop $R1
+    Pop $R0
+	  ${LogSetFileName} "$APPLICATIONDIR\MyInstallLog.txt"
+	  ${LogSetOn}
+	     
+	 
+FunctionEnd
+
+!macro execheck
+	;Function ClientCheck
+	  ReadRegStr $0  HKCU "SOFTWARE\ECS\DB" 'instdir'	 
+	  ReadRegStr $2  HKCU "SOFTWARE\ECS\DB" 'product_version'
+	  
+	  ${LogSetFileName} "$0\MyInstallLog.txt"
+	  ${LogSetOn}
+	  ${If} $2 == ${PRODUCT_VERSION}
+	  ${OrIf} $1 != "" 
+	    ${LogText} "register $0"
+	    ${LogText} "register $1"
+	    MessageBox MB_OKCANCEL|MB_ICONSTOP "You are trying to install over an existing installation \
+		of the Client.$\nPlease uninstall the existing version and run the installer again by \
+		clicking on $\"Ok$\" or click on $\"Cancel$\" to abort this installation." \
+	    /SD IDOK IDCANCEL done
+	      SetOutPath "$0\"
+	      IfFileExists $0\UninstallECS.exe PathGood_uninstall delete_reg
+		PathGood_uninstall:
+			Exec "$0\UninstallECS.exe"
+			Quit
+		delete_reg:
+		      DeleteRegValue HKCU "SOFTWARE\ECS\DB" 'instdir'
+		      DeleteRegValue HKCU "SOFTWARE\ECS\DB" 'product_version'
+		     
+		      Quit
+
+	  done:
+	    Quit
+
+	  ${EndIf}
+	FunctionEnd
+!macroend
+
+Function .onInit
+ 
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+
+  InitPluginsDir
+  
+  !insertmacro MUI_INSTALLOPTIONS_EXTRACT "Database.ini"
+  ;GetTempFileName $INI $PLUGINSDIR
+	;File /oname=$INI "Database.ini"
+FunctionEnd
+
+Function un.onInit
+ 
+ 
+
+  InitPluginsDir
+  ;!insertmacro execheck
+  
+  !insertmacro MUI_INSTALLOPTIONS_EXTRACT "Database.ini"
+  
+FunctionEnd
+
+;section database query
+Section ""
+
+  SetOutPath "$APPLICATIONDIR"
+ 
+  file "ECSDB.zip"
+  nsUnzip::Extract "ECSDB.zip" /d=$APPLICATIONDIR /callP=$0 /END
+  Delete "ECSDB.zip"
+  #Make the directory "$INSTDIR\database" read write accessible by all users
+  AccessControl::GrantOnFile \
+    "$APPLICATIONDIR" "(BU)" "FullAccess"
+  Pop $0
+
+  WriteRegStr HKCU "Software\ECS\DB" "instdir"  $APPLICATIONDIR
+  WriteRegStr HKCU "Software\ECS\DB" "product_version" ${PRODUCT_VERSION}
+ 
+	${LogText} "$SQLFILE"
+
+;${OLEDB}::SQL_Execute   "$SQLQUERY"
+
+MSSQL_OLEDB::SQL_Logon "$SQLSERVER" "$SQLUSER" "$SQLPASSWORD"
+
+pop $0
+
+pop $0
+
+MSSQL_OLEDB::SQL_GetError
+pop $0
+DetailPrint $0
+pop $0
+DetailPrint $0
+MSSQL_OLEDB::SQL_Execute "use $\"$SQLDB$\";"
+Pop $0
+DetailPrint $0
+Pop $0
+DetailPrint $0
+MSSQL_OLEDB::SQL_GetError
+pop $0
+DetailPrint $0
+pop $0
+DetailPrint $0
+MSSQL_OLEDB::SQL_GetRow
+
+	  Push "$APPLICATIONDIR\sql_outputlog.txt" # output file
+	  Push "*.sql" # filter
+	  Push "$APPLICATIONDIR" # folder to search in
+	Exch $R0 #path
+	Exch
+	Exch $R1 #filter
+	Exch
+	Exch 2
+	Exch $R2 #output file
+	Exch 2
+	Push $R3
+	Push $R4
+	Push $R5
+	 ClearErrors
+	 FindFirst $R3 $R4 "$R0\$R1"
+	  FileOpen $R5 $R2 w
+	 
+	 Loop:
+	 IfErrors Done
+	  FileWrite $R5 "$R0\$R4$\r$\n"
+	  
+	MSSQL_OLEDB::SQL_ExecuteScript "$R0\$R4"
+	DetailPrint "$R0\$R4"
+	Pop $0
+	FileWrite $R5 $0$\r$\n
+	Pop $0
+	FileWrite $R5 $0$\r$\n
+	MSSQL_OLEDB::SQL_GetError
+
+	FileWrite $R5 $0$\r$\n
+	FileWrite $R5 $0$\r$\n
+	MSSQL_OLEDB::SQL_GetRow
+	DetailPrint $0
+	FileWrite $R5 $0$\r$\n
+	FileWrite $R5 $0$\r$\n
+	  FindNext $R3 $R4
+	  Goto Loop
+	 
+	 Done:
+	  FileClose $R5
+	 FindClose $R3
+	Pop $R5
+	Pop $R4
+	Pop $R3
+	Pop $R2
+	Pop $R1
+	Pop $R0
+
+MSSQL_OLEDB::SQL_Logout
+
+  ReadRegStr $0  HKCU "SOFTWARE\ECS\DB" 'instdir'
+  
+  SetOutPath "$0"
+    
+	!insertmacro RemoveFilesAndSubDirs "$0"
+     DeleteRegValue HKCU "SOFTWARE\ECS\DB" 'instdir'
+     Delete "$0\UninstallECS.exe"
+     DeleteRegKey /ifempty HKCU "Software\ECS\DB"
+
+SectionEnd
+
+
