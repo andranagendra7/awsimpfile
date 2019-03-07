@@ -1,0 +1,366 @@
+;NSIS Modern User Interface
+;Welcome/Finish Page Example Script
+;Written by Joost Verburg
+
+; HM NIS Edit Wizard helper defines
+!define PRODUCT_NAME "ECS WEB APP"
+!define PRODUCT_VERSION 2.4.2.1
+!define /date MyTIMESTAMP "%d-%m-%Y,%H:%M:%S"
+;--------------------------------
+;Include Modern UI
+  !include "MUI.nsh"
+  !include "OLEDB.nsh"
+  !include "textlog.nsh"
+
+  !include "LogicLib.nsh"
+!define MUI_FINISHPAGE_TITLE 'Completed ECS WEB APP 2.4.2.1 Setup'
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_ICON "${NSISDIR}\Contrib\Graphics\spi\spi.ico"
+
+;The icon for the uninstaller.
+;!define MUI_HEADERIMAGE "spi-global.png"
+ 
+;--------------------------------
+;General
+  ;Name and file
+  Name "${PRODUCT_NAME} ${PRODUCT_VERSION} ${MyTIMESTAMP}"
+  ;Name "ECS Application"
+  OutFile "ECS WEB APP.exe"
+ 
+  ;Default installation folder
+  InstallDir "$PROGRAMFILES\ECS"
+;--------------------------------
+  ;Get installation folder from registry if available
+  InstallDirRegKey HKCU "Software\ECS\Webapp" ""
+  
+;--------------------------------
+;Interface Settings
+  !define MUI_ABORTWARNING
+ 
+;--------------------------------
+;Variables
+
+var APPLICATIONDIR
+
+;--------------------------------
+;Installer Pages
+
+  !insertmacro MUI_PAGE_WELCOME
+ 
+  Page Custom ShowCustom LeaveCustom
+  !insertmacro MUI_PAGE_INSTFILES
+  
+  !insertmacro MUI_PAGE_FINISH
+ 
+  !insertmacro MUI_UNPAGE_WELCOME
+  !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
+  !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_INSTFILES
+  !insertmacro MUI_UNPAGE_FINISH
+;--------------------------------
+;Languages
+  ;Add 1st language
+  !insertmacro MUI_LANGUAGE "English"
+ 
+  
+  LangString DESC_SecExtractor ${LANG_ENGLISH} "ECS Application EXE Files."
+  ;LangString DESC_Extractor ${LANG_GREEK}   "A test extractor section."
+
+
+ 
+  ;Assign language strings to sections
+  !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+    
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecExtractor} $(DESC_SecExtractor)
+    !insertmacro MUI_DESCRIPTION_TEXT ${Secpython} $(DESC_Secpython)
+  !insertmacro MUI_FUNCTION_DESCRIPTION_END
+ 
+
+;-------------------------------
+
+!macro GetCleanDir INPUTDIR
+  ; ATTENTION: USE ON YOUR OWN RISK!
+  ; Please report bugs here: http://stefan.bertels.org/
+  !define Index_GetCleanDir 'GetCleanDir_Line${__LINE__}'
+  Push $R0
+  Push $R1
+  StrCpy $R0 "${INPUTDIR}"
+  StrCmp $R0 "" ${Index_GetCleanDir}-finish
+  StrCpy $R1 "$R0" "" -1
+  StrCmp "$R1" "\" ${Index_GetCleanDir}-finish
+  StrCpy $R0 "$R0\"
+${Index_GetCleanDir}-finish:
+  Pop $R1
+  Exch $R0
+  !undef Index_GetCleanDir
+!macroend
+ 
+; ################################################################
+; similar to "RMDIR /r DIRECTORY", but does not remove DIRECTORY itself
+; example: !insertmacro RemoveFilesAndSubDirs "$INSTDIR"
+!macro RemoveFilesAndSubDirs DIRECTORY
+  ; ATTENTION: USE ON YOUR OWN RISK!
+  !define Index_RemoveFilesAndSubDirs 'RemoveFilesAndSubDirs_${__LINE__}'
+ 
+  Push $R0
+  Push $R1
+  Push $R2
+ 
+  !insertmacro GetCleanDir "${DIRECTORY}"
+  Pop $R2
+  FindFirst $R0 $R1 "$R2*.*"
+${Index_RemoveFilesAndSubDirs}-loop:
+  StrCmp $R1 "" ${Index_RemoveFilesAndSubDirs}-done
+  StrCmp $R1 "." ${Index_RemoveFilesAndSubDirs}-next
+  StrCmp $R1 ".." ${Index_RemoveFilesAndSubDirs}-next
+  IfFileExists "$R2$R1\*.*" ${Index_RemoveFilesAndSubDirs}-directory
+  ; file
+  Delete "$R2$R1"
+  goto ${Index_RemoveFilesAndSubDirs}-next
+${Index_RemoveFilesAndSubDirs}-directory:
+  ; directory
+  RMDir /r "$R2$R1"
+${Index_RemoveFilesAndSubDirs}-next:
+  FindNext $R0 $R1
+  Goto ${Index_RemoveFilesAndSubDirs}-loop
+${Index_RemoveFilesAndSubDirs}-done:
+  FindClose $R0
+ 
+  Pop $R2
+  Pop $R1
+  Pop $R0
+  !undef Index_RemoveFilesAndSubDirs
+!macroend
+;-------------------------------
+;Functions
+
+
+
+Function ShowCustom
+	!insertmacro MUI_HEADER_TEXT "ECS Web App" "  "
+	!insertmacro MUI_INSTALLOPTIONS_INITDIALOG "Database.ini"
+	!insertmacro MUI_INSTALLOPTIONS_SHOW
+	
+FunctionEnd
+
+
+Function LeaveCustom
+     push $R0  
+	 
+	  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "Database.ini" "Field 11" "State"
+	  
+	  StrCmp $R0 "" mustcomplete1
+	 	  
+	  StrCpy $APPLICATIONDIR     $R0	  
+	  goto exitfunc 
+mustcomplete1:
+    MessageBox MB_OK|MB_ICONEXCLAMATION "ECS Webapp field empty not allowed"
+     Abort   
+exitfunc:
+    Pop $R0
+	   
+	  ${LogSetFileName} "$APPLICATIONDIR\MyInstallLog.txt"
+	  ${LogSetOn}
+	     
+	 
+FunctionEnd
+
+!macro execheck
+	;Function ClientCheck
+	  ReadRegStr $0  HKCU "SOFTWARE\ECS\Webapp" 'instdir'
+	
+	  ;ReadRegStr $2  HKCU "SOFTWARE\ECS\Webapp" 'product_version'
+	  ;MessageBox MB_OK "Return value: $2"
+	  ${LogSetFileName} "$0\MyInstallLog.txt"
+	  ${LogSetOn}
+	  ;${VersionCompare} $existingVersion $newVersion $R0
+	${If} $2 != ""
+	  ${VersionCheckNew} $2 ${PRODUCT_VERSION} "$R0"
+	  ;MessageBox MB_OK "Return value: $R0"
+ 
+	  ${If} $R0 != 2
+	  ;${If} $2 > ${PRODUCT_VERSION}
+	  ;${OrIf} $1 != "" 
+	    ${LogText} "register $0"
+	    ${LogText} "register $1"
+	    MessageBox MB_OKCANCEL|MB_ICONSTOP "You are trying to install over an existing installation \
+		of the Client.$\nPlease uninstall the existing version and run the installer again by \
+		clicking on $\"Ok$\" or click on $\"Cancel$\" to abort this installation." \
+	    /SD IDOK IDCANCEL done
+	      SetOutPath "$0\uninstaller"
+	      ;IfFileExists $0\uninstaller\UninstallECS.exe PathGood_uninstall delete_reg
+		PathGood_uninstall:
+			;Exec "$0\uninstaller\UninstallECS.exe"
+			Quit
+		delete_reg:
+		      ;DeleteRegValue HKCU "SOFTWARE\ECS\Webapp" 'instdir'
+		      ;DeleteRegValue HKCU "SOFTWARE\ECS\Webapp" 'product_version'
+		    Quit
+
+	  done:
+	    Quit
+
+	  ${EndIf}
+	${EndIf}
+	;FunctionEnd
+!macroend
+
+!macro VersionCheckV5 Ver1 Ver2 OutVar
+ Push "${Ver1}"
+ Push "${Ver2}"
+  Call VersionCheckV5
+ Pop "${OutVar}"
+!macroend
+!define VersionCheckNew "!insertmacro VersionCheckV5"
+ 
+Function VersionCheckV5
+ Exch $R0 ; second version number
+ Exch
+ Exch $R1 ; first version number
+ Push $R2
+ Push $R3
+ Push $R4
+ Push $R5 ; second version part
+ Push $R6 ; first version part
+ 
+  StrCpy $R1 $R1.
+  StrCpy $R0 $R0.
+ 
+ Next: StrCmp $R0$R1 "" 0 +3
+  StrCpy $R0 0
+  Goto Done
+ 
+  StrCmp $R0 "" 0 +2
+   StrCpy $R0 0.
+  StrCmp $R1 "" 0 +2
+   StrCpy $R1 0.
+ 
+ StrCpy $R2 0
+  IntOp $R2 $R2 + 1
+  StrCpy $R4 $R1 1 $R2
+  StrCmp $R4 . 0 -2
+    StrCpy $R6 $R1 $R2
+    IntOp $R2 $R2 + 1
+    StrCpy $R1 $R1 "" $R2
+ 
+ StrCpy $R2 0
+  IntOp $R2 $R2 + 1
+  StrCpy $R4 $R0 1 $R2
+  StrCmp $R4 . 0 -2
+    StrCpy $R5 $R0 $R2
+    IntOp $R2 $R2 + 1
+    StrCpy $R0 $R0 "" $R2
+ 
+ IntCmp $R5 0 Compare
+ IntCmp $R6 0 Compare
+ 
+ StrCpy $R3 0
+  StrCpy $R4 $R6 1 $R3
+  IntOp $R3 $R3 + 1
+  StrCmp $R4 0 -2
+ 
+ StrCpy $R2 0
+  StrCpy $R4 $R5 1 $R2
+  IntOp $R2 $R2 + 1
+  StrCmp $R4 0 -2
+ 
+ IntCmp $R3 $R2 0 +2 +4
+ Compare: IntCmp 1$R5 1$R6 Next 0 +3
+ 
+  StrCpy $R0 1
+  Goto Done
+  StrCpy $R0 2
+ 
+ Done:
+ Pop $R6
+ Pop $R5
+ Pop $R4
+ Pop $R3
+ Pop $R2
+ Pop $R1
+ Exch $R0 ; output
+FunctionEnd
+
+Function .onInit
+ 
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+  InitPluginsDir
+  !insertmacro execheck
+  
+  !insertmacro MUI_INSTALLOPTIONS_EXTRACT "Database.ini"
+  ;GetTempFileName $INI $PLUGINSDIR
+	;File /oname=$INI "Database.ini"
+FunctionEnd
+
+Function un.onInit
+ 
+  !insertmacro MUI_UNGETLANGUAGE
+  
+FunctionEnd
+
+;section database query
+Section ""
+
+  SetOutPath "$APPLICATIONDIR\uninstaller"
+ 
+  file "ECS.zip"
+  nsUnzip::Extract "ECS.zip" /d=$APPLICATIONDIR\v2.4.1 /callP=$0 /END
+  # Make the directory "$INSTDIR\database" read write accessible by all users
+  
+  Delete "ECS.zip"
+
+  AccessControl::GrantOnFile \
+    "$APPLICATIONDIR\v2.4.1\temp" "(BU)" "FullAccess"
+  Pop $0
+
+  AccessControl::GrantOnFile \
+    "$APPLICATIONDIR\v2.4.1\var" "(BU)" "FullAccess"
+  Pop $0
+   AccessControl::GrantOnFile \
+    "$APPLICATIONDIR\v2.4.1\var\session" "(BU)" "FullAccess"
+  Pop $0
+  AccessControl::GrantOnFile \
+    "$APPLICATIONDIR\v2.4.1\attachment" "(BU)" "FullAccess"
+  Pop $0
+  AccessControl::GrantOnFile \
+    "$APPLICATIONDIR\2.4.1\attachment_error" "(BU)" "FullAccess"
+  Pop $0
+  AccessControl::GrantOnFile \
+    "$APPLICATIONDIR\v2.4.1\License" "(BU)" "FullAccess"
+  Pop $0
+  AccessControl::GrantOnFile \
+    "$APPLICATIONDIR\v2.4.1\encrypted_credentials.php" "(BU)" "FullAccess"
+  Pop $0
+  AccessControl::GrantOnFile \
+    "$APPLICATIONDIR\v2.4.1\attachment_error" "(BU)" "FullAccess"
+  Pop $0
+
+
+  ;Store installation folder
+  WriteRegStr HKCU "Software\ECS\Webapp" "instdir" $APPLICATIONDIR
+  ;WriteRegStr HKCU "Software\ECS\Webapp" "product_version" ${PRODUCT_VERSION}
+  ;Create uninstaller
+	WriteUninstaller "$APPLICATIONDIR\uninstaller\UninstallECS.exe"
+
+SectionEnd
+
+;--------------------------------
+Section "Uninstall"
+
+  ;ADD YOUR OWN FILES HERE...
+  ReadRegStr $0  HKCU "SOFTWARE\ECS\Webapp" 'instdir'
+   
+
+  SetOutPath "$0"
+  !insertmacro RemoveFilesAndSubDirs "$0"
+  DeleteRegValue HKCU "SOFTWARE\ECS\Webapp" 'instdir'
+ 
+  Delete "$0\ECS\UninstallECS.exe"
+  
+
+  DeleteRegKey /ifempty HKCU "Software\ECS\Webapp"
+
+SectionEnd
+
+
