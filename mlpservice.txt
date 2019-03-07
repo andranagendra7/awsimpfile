@@ -1,0 +1,38 @@
+
+step 1: create on directory:
+
+mkdir dirname
+
+step 2: now we moving to newly created directory
+
+cd dirname
+
+step 3: now again we create the new directory
+
+mkdir dirname
+
+step 4: now we moving to inside of newly created directory
+
+cd dirname
+
+step 5: now we the pyhton file 
+
+1) Now, we enter  the servicename
+
+_svc_name_ ="servicename"
+_svc_displayname ="displayname"
+_svc_discriptionname ="discriptionname"
+
+step 6: Now, we enter the logdirectory:
+
+dirname =" "
+
+step 7: Now, we create the pyz file by using pyminifier
+
+>> pyminifir --pyz="filename.pyz" pythonfile
+
+>>python file.pyz install --> To create the service
+
+step 8: now we add the apiurl in config.txt
+
+>> api-url-path="add  application url " 

@@ -1,0 +1,40 @@
+AWS Lambda:
+
+excution time : 300 seconds
+
+AWS Lambda cost:
+
+Requests(1req = one_second):          cost(per-request)
+----------------------------          -----------------
+one request                            $0.0000002 per request.
+
+
+
+m
+
+Requests Tier  1M                                     $0.20 
+
+Duration Tier  
+
+ The lowest example would be to allocate 128 MB of memory within the limit of 3.2 million seconds per month. The price per 100ms would be $US 0.000000208.(per second  $US 0.00000208)
+ 
+ 128mb memory size:
+ 
+ per min  no of seconds       60
+ per hour no of seconds       3600
+ per day no of seconds        86400
+ per month total of seconds  (2592000)
+ 
+ 
+ per second(request)             0.000000208(100ms) * 10 = $US 0.00000208
+ 
+ 3 million seconds(requests)     0.00000208 * 3000000    = $US 2.08
+ 
+Let say, if you allocated 512 MB of memory to your function and executed it 3 million times during one months time. Considering that it ran for 1 second each time, you’d be billed upon monthly compute time (in this case = $18.34) and by monthly requests (in this case = $0.40). Therefore, the total billed sum would be $18.74 per month.
+
+request cost = no of requests * 
+
+total_cost =  request cost  + execution cost(100ms)
+
+total_cost = 
+ 

@@ -1,0 +1,132 @@
+
+lvm in Linux:
+
+
+fdisk
+
+df 
+
+free
+
+top
+
+lsblk
+
+------
+
+portion in Linux:
+
+
+fdisk -l 
+
+fdisk <portion-name> 
+
+ex: 
+step 1: fdisk /dev/xvdf1 hit the enter 
+
+step 2: Now, we enter the n(Create a new portion)
+
+step 3: select the p 
+
+step 4: select the portion number and sector number (enter)
+
+step 5: now we enter the size of the volume (+GB)
+
+step 6: save the portion by using w 
+
+step 7: now, now we update the portion to kernel  (partx /dev/xvdf1)
+
+create a file system:
+
+mkfs -t file-system-type [device]
+
+mkfs.ext4 device_name
+
+step 8: now we create the mount point
+
+>> first we create the directory and then create a mount point
+
+>> mkdir < dir_name >
+
+>> mount -t ext4 < portion > < directory > 
+ 
+example:
+
+mount /dev/xvdf2 develpomet
+
+if don't want to mount point remove mount point by using below command
+
+>> umount   <portion> <directory>
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+LVM: Logical volume management 
+
+
+step 1: we install the lvm package 
+
+>> yum install -y lvm2
+
+step 2: First we create the portions
+
+step 3: we, create the physical-volumes
+
+>> pvcreate <div1> <div2>
+
+>> pvdisplay
+
+Now, we create the volumes 
+
+>>vgcreate <volume-group-name> <portion>
+
+>>vgdisplay
+
+Now, we will create the logical volumes
+
+To create the logical volumes:
+
+>>lvcreate -L <<size>> <<vg-name>> -n << name of lv >>
+
+>>lvcreate -L 400M deploy -n docker-volume      --> To create the logical-volume
+
+  
+>> mkfs.ext4 /dev/vg/lv-name                    --> To create the file-system(To-format the disk)
+
+>> mount /dev/vg/lv-name <directory>            -->(ti give the insert the data new create volume)
+
+>>lvdisplay 
+
+>> lvresize -L +/-<< size >>  << lv-name >>
+
+example:
+
+>> lvresize -L +(add)100M /dev/develpomet/test-volume
+
+
+To remove the logical-volumes:
+
+>> lvremove vg-name/lv-name  --> To remove the volume
+
+Note:If we need  to remove logical-volum, umount the logical-volum then remove the logical-volume
+
+
+if we need to delete pv volumes:
+
+step 1: remove the mount point on lv 
+   
+ >> umount /dev/vg/lv-name
+
+step 2: To remove the logical-volum 
+
+>> lvremove /dev/vg/lv-name
+
+step 3: To remove the volume-groups then it will asks the conformation
+
+>> vgremove  /dev/vg-name
+
+step 4: To remove the physical-volume then it will asks the conformation
+
+>> pvremove /dev/portion
+
+

@@ -1,0 +1,26 @@
+Today used commands:
+
+sed
+grep
+wc 
+
+
+sed command:
+
+sed "option" file
+
+syntax:
+s --> subscription
+
+/g -> all occurrence 
+
+sed 's/old/new' file_name --> To replace the string enter file 
+
+sed 's/old/new/n' file_name --> To replace a string in line at n occurrence 
+
+sed 'n s/old/new' file_name  --> To replace a string particular line
+
+sed "s|$var1|$var2|g" file_name --> To pass the variable in sed command
+
+
+sed -i "s|var|$var|g" /etc/httpd/conf.modules.d/10-subversion.con

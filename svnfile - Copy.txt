@@ -1,0 +1,337 @@
+svn :
+
+repository
+trunk
+branch
+
+checkout
+add
+update
+
+commit 
+
+svn commands:
+
+svn -version
+
+installation  of subversion:
+
+>>> yum install subversion
+
+yum install mod_dav_svn subversion
+
+vi /etc/httpd/conf.d/subversion.conf
+
+
+LoadModule dav_svn_module     modules/mod_dav_svn.so
+LoadModule authz_svn_module   modules/mod_authz_svn.so
+
+<Location /svn>
+   DAV svn
+   SVNParentPath /var/www/svn
+   AuthType Basic
+   AuthName "Authorization Realm"
+   AuthUserFile /etc/svn-users
+   Require valid-user
+</Location>
+
+-----------------------------------------------------------------------------------------------------------------------
+
+svn user add password setup:
+
+To create the new svn user:
+
+>>htpasswd command -m /etc/svn-users [user_name]
+
+To create or change the svn user password:
+
+>> htpasswd command -cm /etc/svn-users [user_name]
+
+example:
+
+To create or change the svn user password:
+
+[root@CentOS ~]# htpasswd -cm /etc/svn-users tom
+New password: 
+Re-type new password: 
+Adding password for user tom
+
+Now, we create the svn parent  directory:
+
+>>mkdir /var/www/svn
+
+Now, we moving to svn parent directory:
+
+>>cd /var/www/svn
+
+Now, we create the svn first repository:
+
+>> svnadmin  /var/www/svn/<repsoitory_name>
+
+>> vi /var/www/svn/<repsoitory_name>/conf/svnserve.conf 
+
+anon-access = none
+authz-db = authz
+
+now we change the repository permissions:
+
+
+
+>>chmod -R apache:apache repository
+
+now we restart httpd service
+
+>> systemctl restart httpd
+
+
+Now, we creating the branches and tags, trunk,
+
+first we the directories:
+
+>> mkdir /tmp/svn-template
+
+>> mkdir /tmp/svn-template/trunk
+
+>> mkdir /tmp/svn-template/branches
+
+>> mkdir /tmp/svn-template/tags
+
+Now we will create trunk and branch and tags
+
+>>svn import -m 'Create trunk, branches, tags directory structure' /tmp/svn-template/
+
+>>svn checkout http://svn.server.com/svn/project_repo --username=tom --> TO login into trunk 
+
+>> svn info 
+
+>> svn status
+
+>> svn add filename
+
+>> svn commit -m "message"
+
+>> svn log 
+
+>> svn co http://svn.server.com/svn/project_repo --username=tom  --> To get the data from remote repository
+
+>> svn diff 
+
+>> svn update  ??
+
+>> svn revert file_name  --> To cancel the change's after commit  
+
+>> svn revert -R tru    -->To Revert back the entire directory
+
+>> svn up --> To resolve conflicts 
+
+>> svn resolve --accept=working README
+
+>>  svn copy --revision=4 trunk/ tags/basic_array_operations
+>>  svn copy --revision=4 trunk/ tags/basic_array_operations
+
+>> svn copy trunk branches/jerry_branch
+
+>> cd branches/branch_name
+
+>>
+-------------------------------------------------------------------------------------------------------------------------
+
+git commands:
+------------
+git 
+
+git init
+
+git config --global user.name "user_name"
+
+git config --global  user.email "email"
+
+git config list
+
+git config user.name
+
+git config user.email
+
+git status
+
+git add .
+
+git commit -m "message"
+
+git commit -a
+-------------------------------------------------------------------------------------------------------------------------
+
+ssh-keygen 
+
+-------------------------------------------------------------------------------------------------------------------------
+
+git pull url
+
+git push remote_name branch
+
+git clone url
+
+git fetch url --> ??
+-------------------------------------------------------------------------------------------------------------------------
+git remote
+
+git remote add "alias name of url" url
+
+git remote -v 
+
+git remote rename oldname newname
+
+git remote remove "remote_name"
+
+-------------------------------------------------------------------------------------------------------------------------
+Log: if we wan t see working history we will use bellow command
+
+git log 
+
+git log –follow[file]
+
+git log -p -2 
+
+git log commit id 
+
+git log --stat --> detailed information of each commit 
+
+git log --pretty=oneline --> commit id and message 
+
+Option	Description of Output
+%H
+
+Commit hash
+
+%h
+
+Abbreviated commit hash
+
+%T
+
+Tree hash
+
+%t
+
+Abbreviated tree hash
+
+%P
+
+Parent hashes
+
+%p
+
+Abbreviated parent hashes
+
+%an
+
+Author name
+
+%ae
+
+Author email
+
+%ad
+
+Author date (format respects the --date=option)
+
+%ar
+
+Author date, relative
+
+%cn
+
+Committer name
+
+%ce  Committer email
+
+%cd Committer date
+
+%cr Committer date, relative
+
+%s
+
+Subject
+
+-------------------------------------------------------------------------------------------------------------------------
+git show commitid
+-------------------------------------------------------------------------------------------------------------------------
+Diff:
+----
+git diff --> we can see change before adding staging area 
+
+git diff –- staged or --cached   --> we can see change after adding staging area
+
+git diff branch_name1 branch_name1 
+
+git diff commit id 
+-------------------------------------------------------------------------------------------------------------------------
+delete files:
+------------
+
+git rm filename
+
+git rm --cached "file_name" --> To remove file from stage 
+git rm --cached
+-------------------------------------------------------------------------------------------------------------------------
+rename file:
+------------
+git mv old filename new file_name 
+
+
+-------------------------------------------------------------------------------------------------------------------------
+git checkout  -HEAD 'filename"
+
+git checkout -- <file>..." to discard changes in working directory --> To remove latest changes on stage area file
+ 
+
+-------------------------------------------------------------------------------------------------------------------------
+Branching:
+---------
+
+git branch
+
+git branch branch_name
+
+git checkout -b branch_name
+
+git checkout branch_name
+
+git branch -d <branc_hname>
+
+git push --all origin
+
+git 
+
+
+git remote add name of
+ 
+----------------------------------------------------------------------------------------------------------------------
+merging:
+
+git merge <branch_name>
+
+git rebase branch_name
+
+----------------------------------------------------------------------------------------------------------------------
+git reset:
+
+
+git reset --HEAD << file_name >>  --> To un_stage  file's stage area to working directory
+
+git reset --hard << commit  >> --> To cancel all commit's after this commit
+
+  
+
+
+ branch_name1  
+
+-------------------------------------------------------------------------
+undo things:
+
+
+git commit --amend --> cancel last commit 
+ 
+ 
+  
+

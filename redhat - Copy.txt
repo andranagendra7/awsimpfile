@@ -1,0 +1,20 @@
+
+rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+ 
+ yum clean all 
+ 
+ yum install docker
+ 
+ sudo yum install firewalld --> to install firewalld on redhat server
+ 
+ ubuntu:
+ 54.211.34.63
+ 
+ amlinux:
+ 
+ 18.212.54.214
+ 
+ scp -i << pemkey >>    << file_path >> user@ip:/home/user_name/. --> TO copy the file's one server to another server
+ 
+ scp -r -i << pemkey >>  << file_path >> user@ip:/home/user_name/. --> TO copy the file's from remote server to local server

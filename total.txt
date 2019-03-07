@@ -1,0 +1,227 @@
+linux commands:
+
+find . -type d -iname git
+
+find / -iname file_name
+
+find / -type f file_name
+
+
+yum list | grep package
+
+rpm -qa package
+
+finger 
+
+cat 
+
+grep
+
+
+user find:
+
+getent passwd <user_name>
+
+ lslogins -u
+ who -c
+ users
+ w
+ whoami
+ 
+ cut -d: -f< line number > <file_path> 
+ 
+ grep "word"
+ 
+ grep 
+ 
+ svn ls url/reponame/braches
+ 
+ ls
+ init 0
+ init 6
+ reboot
+ shutdown
+ halt
+ logout
+ file:
+ 
+first  column: file(or) dir and permission
+second column: block size
+third  column: user
+four   column: group
+five   column: file size
+six    column: date of creation
+seven  column: file/directory
+
+file:
+
+0 --> no permission
+
+rwx    <-- 7
+rw     <-- 6
+rx     <-- 5
+read   <-- 4
+wx     <-- 3
+write  <-- 2
+excute <-- 1
+
+chown
+chmod
+chgrp
+
+grep
+sort
+ps
+
+kill -9 "pid"
+pkill "pname"
+top
+
+ping "hostname" or "ip"
+
+ftp
+
+ftp "hostname" or "ip"
+
+sudo vi filename --> create or open a file
+
+:wq!
+:q!
+ 
+k --> move up
+j --> move down
+h --> move left
+l --> move right
+
+i --> To add text before cursor
+I --> To add text starting of line
+a --> text after cursor
+A --> To add text ending of line 
+o -->after line
+O --> before line
+
+x --> delete single character after cursor
+X --> delete single character before cursor 
+dw --> delete the word
+dd --> delte line
+
+d^ -->Deletes from the current cursor position to the beginning of the line
+
+d$ -->Deletes from the current cursor position to the end of the line
+
+D -->Deletes from the cursor position to the end of the current line
+
+/ --> to search forword
+? --> To search backword
+
+$ --> End of line
+^ --> Starting of line
+. --> current
+* --> any
+
+sh -> bourne shell
+bash --> bourne agian shell
+csh
+ksh --> Korn shell (ksh)
+
+--------------
+$$ -> pid
+
+$# --> no of arguments 
+
+Arithmetic operators:-
+---------------------
+var=`expr $val2 + $val2'
+
+c=`expr $a + $b`
+d=`expr $a - $b`
+e=`expr $a \* $b`
+f=`expr $a % $b`
+g=`expr $a / $b`
+h=`expr $a ==  $b`
+i=`expr $a !=  $b` 
+ 
+Relational operator:-
+-------------------
+-eq
+-ne
+-gt 
+-lt 
+-ge 
+-le 
+
+boolean operators:
+
+!
+-o  --> or
+-a  --> and
+
+if conditions:
+--------------
+if [ ];
+then
+
+fi
+
+if [ ];
+then
+
+else
+
+fi 
+
+if [ ];
+then 
+
+elif [ ];
+then
+
+fi 
+
+if [ ];
+then 
+
+elif [ ];
+then
+
+else 
+
+
+fi 
+
+case:
+-----
+case
+
+esac
+
+loops:
+
+while:
+
+while [ ];
+do 
+
+  stmt 
+  
+done 
+
+
+
+nested loops:
+
+while [ ];
+do 
+
+  stmt 
+  while [ ];
+  do 
+
+       stmt 
+  
+  done 
+  
+done 
+
+ 
+

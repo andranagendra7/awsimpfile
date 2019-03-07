@@ -1,0 +1,15 @@
+mysql setup: on redhat 7 or centos 7
+
+wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+
+rpm -ivh mysql-community-release-el7-5.noarch.rpm
+
+yum update
+
+yum install mysql-server -y 
+
+systemctl start mysqld
+
+systemctl status mysqld
+
+fwyDR2SniD4C_xSL95fV git-jenkins token
